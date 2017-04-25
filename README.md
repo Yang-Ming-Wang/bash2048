@@ -1,4 +1,4 @@
-Bash implementation of popular 2048 game.
-Controlled with arrow keys.
+Bash 2048 小遊戲
+可以使用方向鍵控制
 
-Bugs: https://github.com/mydzor/bash2048/issues
+詳細請用./bash2048 -h 觀看選項

@@ -9,7 +9,7 @@ declare -i flag_skip # flag that prevents doing more than one operation on
 declare -i moves     # stores number of possible moves to determine if player lost 
                      # the game
 declare ESC=$'\e'    # escape byte
-declare header="Bash 2048 v1.1 (https://github.com/mydzor/bash2048)"
+declare header="Bash 2048 中文版 (https://github.com/Yang-Ming-Wang/bash2048)"
 
 declare -i start_time=$(date +%s)
 
@@ -59,7 +59,7 @@ function _seq {
 # print currect status of the game, last added pieces are marked red
 function print_board {
   clear
-  printf "$header pieces=$pieces target=$target score=$score\n"
+  printf "$header 目前佔用 $pieces 塊方格 目標:$target 分數:$score\n"
   printf "Board status:\n" >&3
   printf "\n"
   printf '/------'
@@ -96,6 +96,7 @@ function print_board {
     printf '+------'
   done
   printf '/\n'
+  printf "按 q 可離開遊戲\n"
 }
 
 # Generate new piece on the board
@@ -228,6 +229,8 @@ function key_react {
       s) apply_push down;;
       d) apply_push right;;
       a) apply_push left;;
+
+	  q) end_game 0 1;;
     esac
   }
 }
@@ -268,9 +271,9 @@ function end_game {
   let total_time=end_time-start_time
   
   print_board
-  printf "Your score: $score\n"
+  printf "您的分數: $score\n"
   
-  printf "This game lasted "
+  printf "此次遊戲時間 "
 
   `date --version > /dev/null 2>&1`
   if [[ "$?" -eq 0 ]]; then
@@ -281,34 +284,34 @@ function end_game {
   
   stty echo
   let $1 && {
-    printf "Congratulations you have achieved $target\n"
+    printf "恭喜您已經達成目標： $target\n"
     exit 0
   }
   let test -z $2 && {
-    read -n1 -p "Do you want to overwrite saved game? [y|N]: "
+    read -n1 -p "你想要複寫遊戲紀錄嗎? [y|N]: "
     test "$REPLY" = "Y" || test "$REPLY" = "y" && {
       save_game
-      printf "\nGame saved. Use -r option next to load this game.\n"
+      printf "\n遊戲已保存。 下次可以使用 -r 選項讀取遊戲紀錄\n"
       exit 0
     }
     test "$REPLY" = "" && {
-      printf "\nGame not saved.\n"
+      printf "\n遊戲未保存，離開\n"
       exit 0
     }
   }
-  printf "\nYou have lost, better luck next time.\033[0m\n"
+  printf "\n尚未達成目標, 請再接再勵\033[0m\n"
   exit 0
 }
 
 function help {
   cat <<END_HELP
-Usage: $1 [-b INTEGER] [-t INTEGER] [-l FILE] [-r] [-h]
+用法: $1 [-b 整數] [-t 整數] [-l 檔名] [-r] [-h]
 
-  -b			specify game board size (sizes 3-9 allowed)
-  -t			specify target score to win (needs to be power of 2)
-  -l			log debug info into specified file
-  -r			reload the previous game
-  -h			this help
+  -b			設定棋盤大小 (大小只能指定為 3-9 之間)
+  -t			設定目標分數 (目標分數必須是2的次方)
+  -l			將debug資訊寫入檔案中
+  -r			載入上次遊玩紀錄
+  -h			幫助
 
 END_HELP
 }
@@ -319,20 +322,20 @@ while getopts "b:t:l:rh" opt; do
   case $opt in
     b ) board_size="$OPTARG"
       let '(board_size>=3)&(board_size<=9)' || {
-        printf "Invalid board size, please choose size between 3 and 9\n"
+        printf "無效的棋盤大小, 請設定棋盤大小為 3 到 9 的其中一個數字\n"
         exit -1 
       };;
     t ) target="$OPTARG"
       printf "obase=2;$target\n" | bc | grep -e '^1[^1]*$'
       let $? && {
-        printf "Invalid target, has to be power of two\n"
+        printf "無效的目標分數。目標分數必須是2的次方\n"
         exit -1 
       };;
     r ) reload_flag="1";;
     h ) help $0
         exit 0;;
     l ) exec 3>$OPTARG;;
-    \?) printf "Invalid option: -"$opt", try $0 -h\n" >&2
+    \?) printf "無此選項: -"$opt", 嘗試 $0 -h 看看？\n" >&2
             exit 1;;
     : ) printf "Option -"$opt" requires an argument, try $0 -h\n" >&2
             exit 1;;
